@@ -1,0 +1,15 @@
+# docker compose for multi threaded option
+version: '3.7'
+services:
+  bridge-container:
+    build:
+      context: ./bridge_nodes
+      dockerfile: Dockerfile
+    environment:
+      # the ip of ros master
+      - "ROS_MASTER_URI=http://10.110.177.175:11311"
+      # the ip of this container
+      - "ROS_IP=10.42.0.222"
+    command: bash -c "source /opt/ros/melodic/setup.bash && ./run.sh"
+    network_mode: host
+    tty: true
