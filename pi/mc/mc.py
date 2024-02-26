@@ -7,6 +7,8 @@ import signal
 
 from sim_controller import SimController
 
+# Need to explain what is mc, we need different naming convention.
+
 # Get local machine name
 SERVER_HOST = socket.gethostname()
 MSG_SIZE = 1024
@@ -27,6 +29,9 @@ def get_parsed_results():
 
 
 async def get_cpu_command(sock):
+	"""
+		TODO: Add function definition and explanation
+	"""
 	loop = asyncio.get_event_loop()
 	while True:
 		try:
