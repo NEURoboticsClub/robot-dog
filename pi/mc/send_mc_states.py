@@ -7,6 +7,9 @@ from moteus_controller import MoteusController
 
 
 async def send_mc_states(mdata: MoteusController, sock: socket.socket):
+	"""
+		TODO: Add function definition and explanation
+	"""
 	mc_id = 1
 	loop = asyncio.get_event_loop()
 	while True:

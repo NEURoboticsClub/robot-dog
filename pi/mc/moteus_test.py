@@ -26,6 +26,17 @@ async def close_key(m):
 
 
 async def main(controller: MotorController):
+	"""
+		TODO: add details
+		Loops until keyboards interrupt
+		Args:
+            controller: MoteusController
+        Returns:
+            asyncio.gather
+
+        Raises:
+            KeyboardInterrupt
+	"""
 	# to = 3                      #0.1 seems to be the lower limit for a standalone motor. This is max torque.
 	# vel = 1
 

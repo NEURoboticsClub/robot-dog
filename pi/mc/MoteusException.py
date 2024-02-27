@@ -7,26 +7,38 @@ import moteus
 import moteus_pi3hat
 from colorama import Fore, init
 
+import sys
+import traceback
+from pygments import highlight
+from pygments.lexers import get_lexer_by_name
+from pygments.formatters import TerminalFormatter
+
 exec_print = print
 
 init()
 
 
 class MoteusException(Exception):
-	"""This is the base class for all exceptions that have to do with Moteus motor controllers."""
+	"""
+	This is the base class for all exceptions that have to do with Moteus motor controllers.
+	
+	"""
 
 	def __init__(self, message) -> None:
 		"""The constructor for all MoteusExceptions and child classes. Has a standard output message.
 
-		@param  message  Used to print out the error message. The final printed message is:
-		"Error with the Moteus Controllers: " + message
+			Args:
+		 		message:  Used to print out the error message. The final printed message is:
+				"Error with the Moteus Controllers: " + message
 		"""
 		self.message = "Error with the Moteus Controllers: " + message
 		super().__init__(self.message)
 
 
 class MoteusPermissionsError(MoteusException):
-	"""This class is used when the computer does not have correct permissions to use the pi3hat for CAN.
+	"""Permission Errors:
+
+	This class is used when the computer does not have correct permissions to use the pi3hat for CAN.
 	Used because the error normally thrown does not offer solutions,
 	whereas since we know the issue we can suggest solutions
 	"""
@@ -223,11 +235,6 @@ def set_highlighted_excepthook():
 
 	The downside is if this file is not implemented, this method will also be missing and therefore no pretty colors :(
 	"""
-	import sys
-	import traceback
-	from pygments import highlight
-	from pygments.lexers import get_lexer_by_name
-	from pygments.formatters import TerminalFormatter
 
 	lexer = get_lexer_by_name("pytb" if sys.version_info.major < 3 else "py3tb")
 	formatter = TerminalFormatter()
