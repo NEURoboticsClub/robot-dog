@@ -86,9 +86,10 @@ class MoteusCanError(MoteusException):
 			)
 			return MoteusCanError(message)
 
+		# Check to make sure there are no duplicate IDs
 		if len(raw_ids) != len(
 				set(raw_ids)
-		):  # Check to make sure there are no duplicate IDs
+		):
 			message = (
 					"You cannot have Moteus controllers with the same id, even on separate CAN busses."
 					+ "\n\t\t\tHere were the ID's passed to the Moteus class: "
@@ -96,50 +97,58 @@ class MoteusCanError(MoteusException):
 			)
 			return MoteusCanError(message)
 
-		errors = deepcopy(
-			ids
-		)  # #Create a copy of the ids and then set the arrays blank in order to keep shape for the returned
-		# errors
+		#Create a copy of the ids and then set the arrays blank in order to keep shape for the returned errors
+		errors = deepcopy(ids)
+
 		for i in range(len(errors)):
 			errors[i] = []
+
 		cur_bus = 1
 		cur_id = 1
 
 		for raw_id in raw_ids:
+
+			# Servo bus map is for the pi3hat router in order to know which motors are on which CAN bus
 			servo_bus_map = (
 				{}
-			)  # Servo bus map is for the pi3hat router in order to know which motors are on which
-			# CAN bus
+			)
 
-			for i in range(len(ids)):  # Go through all of CAN buses
+			# Go through all of CAN buses
+			for i in range(len(ids)):
 				bus_ids = []
-				for bus_id in ids[i]:  # Go through all the IDs in the particular bus
+
+				# Go through all the IDs in the particular bus
+				for bus_id in ids[i]:
 					if raw_id == bus_id:
 						bus_ids.append(bus_id)
 						cur_id = bus_id
 						cur_bus = i
-				servo_bus_map[
-					i + 1
-					] = bus_ids  # Set the bus dictionary index to the ids
+				
+				# Set the bus dictionary index to the ids
+				servo_bus_map[i + 1] = bus_ids
 
+			# Create a router using the servo bus map
 			transport = (
-				moteus_pi3hat.Pi3HatRouter(  # Create a router using the servo bus map
+				moteus_pi3hat.Pi3HatRouter(
 					servo_bus_map=servo_bus_map
 				)
 			)
 
+			# Dictionary of servos
 			servos = (
 				{}
-			)  # Go through all the motors and create the moteus.Controller objects associated with them
+			)  
+
+			# Go through all the motors and create the moteus.Controller objects associated with them
 			for bus_id in raw_ids:
 				servos[bus_id] = moteus.Controller(id=bus_id, transport=transport)
 
-			# function in order to test the single motor. If results aren't returned, the ID is incorrect.
-			# If it is wrong, the id is appended to the errors list
-
+			# Test the single motor. Results are empty if the ID is incorrect
 			results = await transport.cycle(
 				[x.make_stop(query=True) for x in servos.values()]
 			)
+
+			# If the results are empty (because of an incorrect ID), the id is appended to the errors list
 			if len(results) == 0:
 				errors[cur_bus].append(cur_id)
 
@@ -249,4 +258,5 @@ def set_highlighted_excepthook():
 set_highlighted_excepthook()
 
 if __name__ == "__main__":
+
 	warnings.warn("", MoteusWarning)

@@ -3,7 +3,7 @@ import json
 import socket
 import errno
 
-from moteus_controller import MoteusController
+from moteusController import MoteusController
 
 MSG_SIZE = 1024
 

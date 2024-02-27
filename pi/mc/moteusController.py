@@ -102,9 +102,15 @@ class MoteusController(abc.ABC):
 		self.mainResults.append(error)
 
 	@staticmethod
-	async def on_close(transport=None, servos=None):  # Called on close, after mdata.exitFlag is True
+	async def on_close(transport=None, servos=None):
+		"""Called on close, after mdata.exitFlag is True
 
-		if transport is not None and servos is not None:  # Go through all motors and stop them
+		Args:
+			transport (_type_, optional): _description_. Defaults to None.
+			servos (_type_, optional): _description_. Defaults to None.
+		"""
+		# Go through all motors and stop them
+		if transport is not None and servos is not None:
 
 			await transport.cycle(
 				[x.make_position(position=math.nan, velocity=0.1, maximum_torque=0.23) for x in servos.values()])

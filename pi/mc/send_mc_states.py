@@ -3,7 +3,7 @@ import asyncio
 import socket
 import time
 
-from moteus_controller import MoteusController
+from moteusController import MoteusController
 
 
 async def send_mc_states(mdata: MoteusController, sock: socket.socket):
