@@ -2,14 +2,17 @@ import asyncio
 
 import moteus
 import moteus_pi3hat
-from moteus_controller import MoteusController
+from moteusController import MoteusController
 from MoteusException import MoteusPermissionsError, MoteusCanError
 
 
 class MotorController(MoteusController):
+	""" This class defines the motor controller.
+
+	Args:
+		MoteusController (MoteusController): The Moteus Controller
 	"""
-		TODO: Add class and function definition and explanation
-	"""
+	
 	async def on_open(self, transport=None, servos=None):  # Starts on open
 		if transport is not None and servos is not None:
 			results = await transport.cycle([x.make_stop(query=True) for x in servos.values()])
