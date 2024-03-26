@@ -7,6 +7,7 @@ from MoteusException import MoteusPermissionsError, MoteusCanError
 
 
 class MotorController(MoteusController):
+	async def on_open(self, transport=None, servos=None):
 	""" This class defines the motor controller.
 
 	Args:
@@ -33,8 +34,14 @@ class MotorController(MoteusController):
 			await transport.cycle([x.make_rezero(query=True) for x in servos.values()])
 
 	async def main(self):
-		"""
-		TODO: Add function definition and explanation
+		"""TODO: add details
+		Loops until keyboards interrupt
+		Args:
+            
+        Returns:
+            
+        Raises:
+        
 		"""
 		self.mprint("in main")
 		servo_bus_map = {}  # Servo bus map is for the pi3hat router in order to know which motors are on which CAN bus
@@ -85,7 +92,14 @@ class MotorController(MoteusController):
 
 	async def run(self):
 		"""
-		TODO: Add function definition and explanation
+		TODO: add details
+		Loops until keyboards interrupt
+		Args:
+            
+        Returns:
+            
+        Raises:
+        
 		"""
 		if len(self.mainResults) == 0:
 			self.moteus_task = asyncio.create_task(self.main())
