@@ -2,14 +2,18 @@ import asyncio
 
 import moteus
 import moteus_pi3hat
-from moteus_controller import MoteusController
+from moteusController import MoteusController
 from MoteusException import MoteusPermissionsError, MoteusCanError
 
 
 class MotorController(MoteusController):
+	async def on_open(self, transport=None, servos=None):
+	""" This class defines the motor controller.
+
+	Args:
+		MoteusController (MoteusController): The Moteus Controller
 	"""
-		TODO: Add class and function definition and explanation
-	"""
+	
 	async def on_open(self, transport=None, servos=None):  # Starts on open
 		if transport is not None and servos is not None:
 			results = await transport.cycle([x.make_stop(query=True) for x in servos.values()])
@@ -30,8 +34,14 @@ class MotorController(MoteusController):
 			await transport.cycle([x.make_rezero(query=True) for x in servos.values()])
 
 	async def main(self):
-		"""
-		TODO: Add function definition and explanation
+		"""TODO: add details
+		Loops until keyboards interrupt
+		Args:
+            
+        Returns:
+            
+        Raises:
+        
 		"""
 		self.mprint("in main")
 		servo_bus_map = {}  # Servo bus map is for the pi3hat router in order to know which motors are on which CAN bus
@@ -72,7 +82,9 @@ class MotorController(MoteusController):
 			]
 
 			# Set the results and wait until they are free to write.
-			self.results = await transport.cycle(commands)  # Cycle through the commands made earlier
+			self.results = await transport.cycle(commands)  # Go through each commmand and pass it to the Pi3Hat
+															# The Pi3Hat will process each command and will generate
+															# individual CAN messages to send to all of the motors
 
 			await asyncio.sleep(0.02)  # Minimum sleep time in order to make this method thread safe
 
@@ -80,7 +92,14 @@ class MotorController(MoteusController):
 
 	async def run(self):
 		"""
-		TODO: Add function definition and explanation
+		TODO: add details
+		Loops until keyboards interrupt
+		Args:
+            
+        Returns:
+            
+        Raises:
+        
 		"""
 		if len(self.mainResults) == 0:
 			self.moteus_task = asyncio.create_task(self.main())
