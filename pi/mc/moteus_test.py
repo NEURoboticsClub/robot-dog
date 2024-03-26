@@ -7,7 +7,6 @@ More details
 import asyncio
 
 # for bridge nodes sockets
-import sys
 import socket
 
 from motor_controller import MotorController
@@ -17,15 +16,15 @@ SERVER_HOST = socket.gethostname()
 CPU_SUB_SERVER_PORT = 9999
 MC_SUB_SERVER_PORT = 9998
 
-
-async def close_key(m):
-	await m.close_moteus()
-	m.mprint("Moteus Closed Properly")
-
+async def close_key(controller):
+	await controller.close_moteus()
+	controller.mprint("Moteus Closed Properly")
 
 async def main(controller: MotorController):
 	"""
-		Loops until keyboards interrupt
+		Sockets allow you to establish network connections over various network protocools 
+		(this project uses simple IPv4) to send and recieve data.  
+		Loops until keyboard interrupt
 		Args:
             controller: MoteusController
         Returns:
@@ -41,24 +40,27 @@ async def main(controller: MotorController):
 	# is
 
 	# sockets:
-	# 1. init socket and time out to listen to cpu_sub node
+	# 1a. init the socket and set the timeout to 10 seconds. purpose: listen to cpu_sub node
 	cpu_sub_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	cpu_sub_socket.settimeout(10.0)
-	# connect to server
+	# 1b. connect to remote socket on port 9999 on SERVER_HOST
 	cpu_sub_socket.connect((SERVER_HOST, CPU_SUB_SERVER_PORT))
 
-	# 2. inis socket and timeout to send msg to mc_sub node
+	# 2a. init the socket and set the timeout to 10 seconds. purpose: send msg to mc_sub node
 	mc_sub_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 	mc_sub_socket.settimeout(10.0)
+	# 2b. connect to remote socket on port 9998 on SERVER_HOST
 	mc_sub_socket.connect((SERVER_HOST, MC_SUB_SERVER_PORT))
 
-	# 3. init thread
+	# 3. create three coroutines that'll run concurrently.
+	# 3a. controller_task will  
 	controller_task = asyncio.create_task(controller.run())
-	cpu_task = asyncio.create_task(m.get_cpu_command(cpu_sub_socket, controller))
-	mc_task = asyncio.create_task(m.send_mc_states(controller, mc_sub_socket))
+	# 3b. cpu_task will set attributes to the 12 motor controllers
+	cpu_task = asyncio.create_task(runningLoop.get_cpu_command(cpu_sub_socket, controller))
+	# 3c. mc_task will 
+	mc_task = asyncio.create_task(runningLoop.send_mc_states(controller, mc_sub_socket))
 
-	# # 4. run
-
+	# 4. schedule the coroutines to be run. stop running on keyboard interrupt (any keyboard input).
 	try:
 		await asyncio.gather(controller_task, cpu_task, mc_task)
 	except KeyboardInterrupt:
@@ -70,11 +72,11 @@ async def main(controller: MotorController):
 
 if __name__ == '__main__':
 	loop = asyncio.get_event_loop()
-	m = loop.run_until_complete(MotorController.create(ids=[[2], [], [], [], []]))
+	runningLoop = loop.run_until_complete(MotorController.create(ids=[[2], [], [], [], []]))
 	try:
-		loop.run_until_complete(main(m))
+		loop.run_until_complete(main(runningLoop))
 	except KeyboardInterrupt:
-		loop.run_until_complete(close_key(m))
+		loop.run_until_complete(close_key(runningLoop))
 
 # to add:
 # flux braking- moteus defaults to discharging voltage when braking to DC power bus
