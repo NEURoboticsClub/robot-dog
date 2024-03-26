@@ -10,9 +10,7 @@ import asyncio
 import sys
 import socket
 
-from get_cpu_command import get_cpu_command
 from motor_controller import MotorController
-from send_mc_states import send_mc_states
 
 # Get local machine name
 SERVER_HOST = socket.gethostname()
@@ -27,7 +25,6 @@ async def close_key(m):
 
 async def main(controller: MotorController):
 	"""
-		TODO: add details
 		Loops until keyboards interrupt
 		Args:
             controller: MoteusController
@@ -57,8 +54,8 @@ async def main(controller: MotorController):
 
 	# 3. init thread
 	controller_task = asyncio.create_task(controller.run())
-	cpu_task = asyncio.create_task(get_cpu_command(cpu_sub_socket, controller))
-	mc_task = asyncio.create_task(send_mc_states(controller, mc_sub_socket))
+	cpu_task = asyncio.create_task(m.get_cpu_command(cpu_sub_socket, controller))
+	mc_task = asyncio.create_task(m.send_mc_states(controller, mc_sub_socket))
 
 	# # 4. run
 
@@ -73,7 +70,7 @@ async def main(controller: MotorController):
 
 if __name__ == '__main__':
 	loop = asyncio.get_event_loop()
-	m = loop.run_until_complete(MotorController.create(ids=[[], [], [2], [], []]))
+	m = loop.run_until_complete(MotorController.create(ids=[[2], [], [], [], []]))
 	try:
 		loop.run_until_complete(main(m))
 	except KeyboardInterrupt:
