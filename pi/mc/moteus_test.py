@@ -11,7 +11,7 @@ import sys
 import socket
 
 from get_cpu_command import get_cpu_command
-from motor_controller import MotorController
+from moteusController import MotorController, MoteusController
 from send_mc_states import send_mc_states
 
 # Get local machine name
