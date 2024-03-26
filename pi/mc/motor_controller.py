@@ -75,7 +75,9 @@ class MotorController(MoteusController):
 			]
 
 			# Set the results and wait until they are free to write.
-			self.results = await transport.cycle(commands)  # Cycle through the commands made earlier
+			self.results = await transport.cycle(commands)  # Go through each commmand and pass it to the Pi3Hat
+															# The Pi3Hat will process each command and will generate
+															# individual CAN messages to send to all of the motors
 
 			await asyncio.sleep(0.02)  # Minimum sleep time in order to make this method thread safe
 
