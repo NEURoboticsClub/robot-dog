@@ -16,20 +16,15 @@ SERVER_HOST = socket.gethostname()
 CPU_SUB_SERVER_PORT = 9999
 MC_SUB_SERVER_PORT = 9998
 
-async def close_key(m):
-	await m.close_moteus()
-	m.mprint("Moteus Closed Properly")
+async def close_key(controller):
+	await controller.close_moteus()
+	controller.mprint("Moteus Closed Properly")
 
 async def main(controller: MotorController):
 	"""
-<<<<<<< HEAD
-		TODO: add details
 		Sockets allow you to establish network connections over various network protocools 
 		(this project uses simple IPv4) to send and recieve data.  
 		Loops until keyboard interrupt
-=======
-		Loops until keyboards interrupt
->>>>>>> 906f694e96801072584e70a4f82181c465a744df
 		Args:
             controller: MoteusController
         Returns:
@@ -60,15 +55,10 @@ async def main(controller: MotorController):
 	# 3. create three coroutines that'll run concurrently.
 	# 3a. controller_task will  
 	controller_task = asyncio.create_task(controller.run())
-<<<<<<< HEAD
 	# 3b. cpu_task will set attributes to the 12 motor controllers
-	cpu_task = asyncio.create_task(get_cpu_command(cpu_sub_socket, controller))
+	cpu_task = asyncio.create_task(runningLoop.get_cpu_command(cpu_sub_socket, controller))
 	# 3c. mc_task will 
-	mc_task = asyncio.create_task(send_mc_states(controller, mc_sub_socket))
-=======
-	cpu_task = asyncio.create_task(m.get_cpu_command(cpu_sub_socket, controller))
-	mc_task = asyncio.create_task(m.send_mc_states(controller, mc_sub_socket))
->>>>>>> 906f694e96801072584e70a4f82181c465a744df
+	mc_task = asyncio.create_task(runningLoop.send_mc_states(controller, mc_sub_socket))
 
 	# 4. schedule the coroutines to be run. stop running on keyboard interrupt (any keyboard input).
 	try:
@@ -82,11 +72,11 @@ async def main(controller: MotorController):
 
 if __name__ == '__main__':
 	loop = asyncio.get_event_loop()
-	m = loop.run_until_complete(MotorController.create(ids=[[2], [], [], [], []]))
+	runningLoop = loop.run_until_complete(MotorController.create(ids=[[2], [], [], [], []]))
 	try:
-		loop.run_until_complete(main(m))
+		loop.run_until_complete(main(runningLoop))
 	except KeyboardInterrupt:
-		loop.run_until_complete(close_key(m))
+		loop.run_until_complete(close_key(runningLoop))
 
 # to add:
 # flux braking- moteus defaults to discharging voltage when braking to DC power bus
