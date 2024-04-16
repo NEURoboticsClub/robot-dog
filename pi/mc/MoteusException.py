@@ -7,38 +7,26 @@ import moteus
 import moteus_pi3hat
 from colorama import Fore, init
 
-import sys
-import traceback
-from pygments import highlight
-from pygments.lexers import get_lexer_by_name
-from pygments.formatters import TerminalFormatter
-
 exec_print = print
 
 init()
 
 
 class MoteusException(Exception):
-	"""
-	This is the base class for all exceptions that have to do with Moteus motor controllers.
-	
-	"""
+	"""This is the base class for all exceptions that have to do with Moteus motor controllers."""
 
 	def __init__(self, message) -> None:
 		"""The constructor for all MoteusExceptions and child classes. Has a standard output message.
 
-			Args:
-		 		message:  Used to print out the error message. The final printed message is:
-				"Error with the Moteus Controllers: " + message
+		@param  message  Used to print out the error message. The final printed message is:
+		"Error with the Moteus Controllers: " + message
 		"""
 		self.message = "Error with the Moteus Controllers: " + message
 		super().__init__(self.message)
 
 
 class MoteusPermissionsError(MoteusException):
-	"""Permission Errors:
-
-	This class is used when the computer does not have correct permissions to use the pi3hat for CAN.
+	"""This class is used when the computer does not have correct permissions to use the pi3hat for CAN.
 	Used because the error normally thrown does not offer solutions,
 	whereas since we know the issue we can suggest solutions
 	"""
@@ -86,10 +74,9 @@ class MoteusCanError(MoteusException):
 			)
 			return MoteusCanError(message)
 
-		# Check to make sure there are no duplicate IDs
 		if len(raw_ids) != len(
 				set(raw_ids)
-		):
+		):  # Check to make sure there are no duplicate IDs
 			message = (
 					"You cannot have Moteus controllers with the same id, even on separate CAN busses."
 					+ "\n\t\t\tHere were the ID's passed to the Moteus class: "
@@ -97,58 +84,50 @@ class MoteusCanError(MoteusException):
 			)
 			return MoteusCanError(message)
 
-		#Create a copy of the ids and then set the arrays blank in order to keep shape for the returned errors
-		errors = deepcopy(ids)
-
+		errors = deepcopy(
+			ids
+		)  # #Create a copy of the ids and then set the arrays blank in order to keep shape for the returned
+		# errors
 		for i in range(len(errors)):
 			errors[i] = []
-
 		cur_bus = 1
 		cur_id = 1
 
 		for raw_id in raw_ids:
-
-			# Servo bus map is for the pi3hat router in order to know which motors are on which CAN bus
 			servo_bus_map = (
 				{}
-			)
+			)  # Servo bus map is for the pi3hat router in order to know which motors are on which
+			# CAN bus
 
-			# Go through all of CAN buses
-			for i in range(len(ids)):
+			for i in range(len(ids)):  # Go through all of CAN buses
 				bus_ids = []
-
-				# Go through all the IDs in the particular bus
-				for bus_id in ids[i]:
+				for bus_id in ids[i]:  # Go through all the IDs in the particular bus
 					if raw_id == bus_id:
 						bus_ids.append(bus_id)
 						cur_id = bus_id
 						cur_bus = i
-				
-				# Set the bus dictionary index to the ids
-				servo_bus_map[i + 1] = bus_ids
+				servo_bus_map[
+					i + 1
+					] = bus_ids  # Set the bus dictionary index to the ids
 
-			# Create a router using the servo bus map
 			transport = (
-				moteus_pi3hat.Pi3HatRouter(
+				moteus_pi3hat.Pi3HatRouter(  # Create a router using the servo bus map
 					servo_bus_map=servo_bus_map
 				)
 			)
 
-			# Dictionary of servos
 			servos = (
 				{}
-			)  
-
-			# Go through all the motors and create the moteus.Controller objects associated with them
+			)  # Go through all the motors and create the moteus.Controller objects associated with them
 			for bus_id in raw_ids:
 				servos[bus_id] = moteus.Controller(id=bus_id, transport=transport)
 
-			# Test the single motor. Results are empty if the ID is incorrect
+			# function in order to test the single motor. If results aren't returned, the ID is incorrect.
+			# If it is wrong, the id is appended to the errors list
+
 			results = await transport.cycle(
 				[x.make_stop(query=True) for x in servos.values()]
 			)
-
-			# If the results are empty (because of an incorrect ID), the id is appended to the errors list
 			if len(results) == 0:
 				errors[cur_bus].append(cur_id)
 
@@ -244,6 +223,11 @@ def set_highlighted_excepthook():
 
 	The downside is if this file is not implemented, this method will also be missing and therefore no pretty colors :(
 	"""
+	import sys
+	import traceback
+	from pygments import highlight
+	from pygments.lexers import get_lexer_by_name
+	from pygments.formatters import TerminalFormatter
 
 	lexer = get_lexer_by_name("pytb" if sys.version_info.major < 3 else "py3tb")
 	formatter = TerminalFormatter()
@@ -258,5 +242,4 @@ def set_highlighted_excepthook():
 set_highlighted_excepthook()
 
 if __name__ == "__main__":
-
 	warnings.warn("", MoteusWarning)

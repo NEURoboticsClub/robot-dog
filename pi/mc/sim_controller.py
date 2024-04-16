@@ -1,6 +1,6 @@
 import warnings
 
-from moteusController import MoteusController
+from moteus_controller import MoteusController
 import asyncio
 
 from MoteusException import MoteusWarning
