@@ -1,14 +1,8 @@
 import abc
 import asyncio
 import math
-import json
-import socket
-import time
-import errno
 from copy import deepcopy
 from MoteusException import MoteusCanError
-
-MSG_SIZE = 1024
 
 
 class MoteusController(abc.ABC):
@@ -38,9 +32,8 @@ class MoteusController(abc.ABC):
 				Therefore, if the class was restarted but the motors were not, the position remains the same.
 				- Wait until all motors are ready. This will BLOCK code, make sure to accommodate accordingly.
 				This is only done once on startup.
-			@param ids These are the CAN ids of the motors attached to the Pi3Hat. The Pi3Hat has 5 CAN channels which
-				can handle a total of 12 motors all together, assuming they are equally distributed.
-				It is a list of lists, with each internal list representing the IDs of the motors attached to that can
+			@param ids These are the CAN ids of the motors attached to the Pi3Hat.
+				Is a list of lists, with each internal list representing the IDs of the motors attached to that can
 				drive
 				 For example, [[],[],[4]] means that on CAN bus 3, there is 1 motor with ID 4 attached.
 				   - All of these IDs must be unique, regardless if they are on the same CAN bus or not.
@@ -77,7 +70,6 @@ class MoteusController(abc.ABC):
 			self.mainResults.append(await MoteusCanError.create(self.raw_ids, self.ids))
 
 		# This will be the position, velocity, and torque to set to each individual motor.
-		# TODO: why math.nan for the position?
 		self.motor_states = {raw_id: {"position": math.nan, "velocity": 0, "torque": 0} for raw_id in self.raw_ids}
 
 		self.mprint(self.mainResults)
@@ -110,15 +102,9 @@ class MoteusController(abc.ABC):
 		self.mainResults.append(error)
 
 	@staticmethod
-	async def on_close(transport=None, servos=None):
-		"""Called on close, after mdata.exitFlag is True
+	async def on_close(transport=None, servos=None):  # Called on close, after mdata.exitFlag is True
 
-		Args:
-			transport (_type_, optional): _description_. Defaults to None.
-			servos (_type_, optional): _description_. Defaults to None.
-		"""
-		# Go through all motors and stop them
-		if transport is not None and servos is not None:
+		if transport is not None and servos is not None:  # Go through all motors and stop them
 
 			await transport.cycle(
 				[x.make_position(position=math.nan, velocity=0.1, maximum_torque=0.23) for x in servos.values()])
@@ -321,101 +307,3 @@ class MoteusController(abc.ABC):
 		await jumpreturn2
 		self.set_attributes(1, pos=math.nan, velocity=0, torque=2)
 		self.set_attributes(2, pos=math.nan, velocity=0, torque=2)
-
-	async def get_cpu_command(self, sock: socket.socket):
-		"""
-		Receive command from bridge nodes using tcp socket
-		and use the data to set attributes to the 12 motor controllers
-		"""
-		loop = asyncio.get_event_loop()
-		while True:
-			try:
-				await asyncio.sleep(0.01)
-				# 0. get message and process
-				bytes_msg = await loop.sock_recv(sock, MSG_SIZE)
-
-				# 1. exit the loop if no more data to read
-				if not bytes_msg:
-					continue
-
-				# 2. convert to json object and get the id and mc12 data
-				json_msg = json.loads(bytes_msg.decode())
-				mc12 = json_msg["mc12"]
-
-				# 3. skip if not data received yet
-				if not mc12:
-					continue
-
-				# 4. get data for 2nd motor (index = 1, if there are 12 motors)
-				motor_idx = 1
-				mc2data = mc12[motor_idx]
-
-				# 5. set attributes
-				self.set_attributes(mc2data[0], pos=mc2data[1], velocity=mc2data[2], torque=mc2data[3])
-
-				# 6. log
-				# print("MC: from CPU id={}, m_mc2={}".format(msg_id, mc2data))
-			except KeyError:
-				self.mprint("Error: 'id' or 'mc12' key not found in JSON data")
-			except json.JSONDecodeError:
-				self.mprint("Error: Invalid JSON data received. Reconnecting...")
-
-			except socket.timeout as e:
-				self.mprint("Timeout occurred while waiting for response: {}".format(e))
-
-			except IOError as e:
-				if e.errno == errno.EPIPE:
-					self.mprint("broken pipe: {}".format(e))
-
-	
-	
-	
-	async def send_mc_states(self, sock: socket.socket):
-		"""
-			TODO: Add function definition and explanation
-		"""
-		mc_id = 1
-		loop = asyncio.get_event_loop()
-		while True:
-			start_time = time.time()
-			# 0. get data from the 12 motors
-			parsed_res = self.get_parsed_results()
-			if not parsed_res:
-				await asyncio.sleep(0.02)
-				continue
-
-			# 1. if there is only 1 motor connected
-			if len(parsed_res) == 1:
-				# set all to the same vel and torque of the only motor connected and add to parsedRes
-				pos, vel, tor = parsed_res[0]["POSITION"], parsed_res[0]["VELOCITY"], parsed_res[0]["TORQUE"]
-				parsed_res += [{
-					"MODE": 3,
-					"POSITION": pos,
-					"VELOCITY": vel,
-					"TORQUE": tor,
-					"VOLTAGE": 1.0,
-					"TEMPERATURE": 1.0,
-					"FAULT": 1.0
-				}] * 11
-			# 2. set all the 12, use motor id from 1-12 and send to cpu
-			mcs12_current = [
-				[motor_id + 1,
-				float("{:.4f}".format(parsed_res[0]["POSITION"])),
-				float("{:.4f}".format(parsed["VELOCITY"])),
-				float("{:.4f}".format(parsed["TORQUE"]))
-				] for motor_id, parsed in enumerate(parsed_res)
-			]
-
-			# 3. create a dict
-			data = {"mc12": mcs12_current, "id": mc_id}
-			self.mprint(data)
-			jsonify_data = json.dumps(data)
-			self.mprint(f"MC: sending curr2={mcs12_current[1]}")
-
-			# 4. send as bytes encoded json
-			await loop.sock_sendall(sock, jsonify_data.encode())
-			mc_id += 1
-
-			# 5. sleep for 20ms so its sending at 50Hz
-			sleep_time = time.time()-start_time
-			await asyncio.sleep(max(0.02-sleep_time, 0))
