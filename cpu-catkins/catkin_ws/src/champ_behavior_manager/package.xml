@@ -1,0 +1,35 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>champ_behavior_manager</name>
+  <version>0.0.1</version>
+  <description>
+    Behavior and gait management node for CHAMP-based quadruped robots.
+    Provides a C++ ROS node that manages high-level behaviors and gait
+    profiles and outputs velocity commands to the existing champ_base
+    controller.
+  </description>
+
+  <maintainer email="you@example.com">Your Name</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>champ_msgs</build_depend>
+  <build_depend>rostest</build_depend>
+
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>champ_msgs</exec_depend>
+
+  <test_depend>rostest</test_depend>
+  <test_depend>gtest</test_depend>
+
+  <export>
+  </export>
+</package>
+
+
