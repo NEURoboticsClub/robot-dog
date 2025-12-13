@@ -1,0 +1,30 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>motion_utils_cpp</name>
+  <version>0.0.1</version>
+  <description>
+    C++ motion and control utilities for the NU-Dog project, including
+    first-order filters, PID controllers, and velocity limiting helpers.
+  </description>
+
+  <maintainer email="you@example.com">Your Name</maintainer>
+  <license>BSD</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <build_depend>roscpp</build_depend>
+  <build_depend>geometry_msgs</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+  <exec_depend>roscpp</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+  <test_depend>rostest</test_depend>
+  <test_depend>gtest</test_depend>
+
+  <export>
+  </export>
+</package>
+
+
